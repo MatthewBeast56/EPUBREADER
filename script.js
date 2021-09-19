@@ -378,13 +378,11 @@ App.prototype.onRenditionClick = function (event) {
         event.preventDefault();
         this.doSidebar();
     } else if (x < third) {
-        event.preventDefault();
-        this.state.rendition.prev();
-        b = this.qs(".bar button.prev");
+          event.preventDefault();
+        this.doSidebar();
     } else if (x > (third * 2)) {
-        event.preventDefault();
-        this.state.rendition.next();
-        b = this.qs(".bar button.next");
+          event.preventDefault();
+        this.doSidebar();
     }
     if (b) {
         b.style.transform = "scale(1.15)";
