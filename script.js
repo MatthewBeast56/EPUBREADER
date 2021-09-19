@@ -1,34 +1,5 @@
 "use strict";
 
-function isRavenDisabled() {
-    try {
-        if (typeof disableRaven !== 'undefined' && disableRaven) return true;
-        if (typeof window.disableRaven !== 'undefined' && window.disableRaven) return true;
-        return false;
-    } catch (ex) {
-        return false;
-    }
-}
-
-window.onerror = function (msg, url, line, column, err) {
-    if (msg.indexOf("Permission denied") > -1) return;
-    if (msg.indexOf("Object expected") > -1 && url.indexOf("epub") > -1) return;
-    document.querySelector(".app .error").classList.remove("hidden");
-    document.querySelector(".app .error .error-title").innerHTML = "Error";
-    document.querySelector(".app .error .error-description").innerHTML = "Please try reloading the page or using a different browser (Chrome or Firefox), and if the error still persists, <a href=\"https://github.com/pgaskin/ePubViewer/issues\">report an issue</a>.";
-    document.querySelector(".app .error .error-info").innerHTML = msg;
-    document.querySelector(".app .error .error-dump").innerHTML = JSON.stringify({
-        error: err.toString(),
-        stack: err.stack,
-        msg: msg,
-        url: url,
-        line: line,
-        column: column,
-    });
-    try {
-        if (!isRavenDisabled()) Raven.captureException(err);
-    } catch (err) {}
-};
 
 let App = function (el) {
     this.ael = el;
@@ -46,7 +17,7 @@ let App = function (el) {
         try {
             if (event.target.classList.contains("sidebar-wrapper")) event.target.classList.add("out");
         } catch (err) {
-            this.fatal("error hiding sidebar", err);
+            this.fatal("hiding sidebar", err);
         }
     });
     this.qsa(".chips[data-chips]").forEach(el => {
