@@ -302,7 +302,7 @@ App.prototype.onNavigationLoaded = function (nav) {
         items.forEach(item => {
             let a = toc.appendChild(this.el("a", "item"));
             a.href = item.href;
-            a.dataset.href = "OEBPS" + item.href;
+            a.dataset.href = item.href;
             a.innerHTML = `${"&nbsp;".repeat(indent*4)}${item.label.trim()}`;
             a.addEventListener("click", this.onTocItemClick.bind(this, item.href));
             handleItems(item.subitems, indent + 1);
