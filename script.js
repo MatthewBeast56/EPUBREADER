@@ -1,5 +1,34 @@
 "use strict";
 
+function isRavenDisabled() {
+    try {
+        if (typeof disableRaven !== 'undefined' && disableRaven) return true;
+        if (typeof window.disableRaven !== 'undefined' && window.disableRaven) return true;
+        return false;
+    } catch (ex) {
+        return false;
+    }
+}
+
+window.onerror = function (msg, url, line, column, err) {
+    if (msg.indexOf("Permission denied") > -1) return;
+    if (msg.indexOf("Object expected") > -1 && url.indexOf("epub") > -1) return;
+    document.querySelector(".app .error").classList.remove("hidden");
+    document.querySelector(".app .error .error-title").innerHTML = "Error";
+    document.querySelector(".app .error .error-description").innerHTML = "Please try reloading the page or using a different browser (Chrome or Firefox), and if the error still persists, <a href=\"https://github.com/pgaskin/ePubViewer/issues\">report an issue</a>.";
+    document.querySelector(".app .error .error-info").innerHTML = msg;
+    document.querySelector(".app .error .error-dump").innerHTML = JSON.stringify({
+        error: err.toString(),
+        stack: err.stack,
+        msg: msg,
+        url: url,
+        line: line,
+        column: column,
+    });
+    try {
+        if (!isRavenDisabled()) Raven.captureException(err);
+    } catch (err) {}
+};
 
 let App = function (el) {
     this.ael = el;
@@ -17,7 +46,7 @@ let App = function (el) {
         try {
             if (event.target.classList.contains("sidebar-wrapper")) event.target.classList.add("out");
         } catch (err) {
-            this.fatal("hiding sidebar", err);
+            this.fatal("error hiding sidebar", err);
         }
     });
     this.qsa(".chips[data-chips]").forEach(el => {
@@ -170,6 +199,20 @@ App.prototype.doOpenBook = function () {
     fi.click();
 };
 
+App.prototype.fatal = function (msg, err, usersFault) {
+    console.error(msg, err);
+    document.querySelector(".app .error").classList.remove("hidden");
+    document.querySelector(".app .error .error-title").innerHTML = "Error";
+    document.querySelector(".app .error .error-description").innerHTML = usersFault ? "" : "Please try reloading the page or using a different browser, and if the error still persists, <a href=\"https://github.com/pgaskin/ePubViewer/issues\">report an issue</a>.";
+    document.querySelector(".app .error .error-info").innerHTML = msg + ": " + err.toString();
+    document.querySelector(".app .error .error-dump").innerHTML = JSON.stringify({
+        error: err.toString(),
+        stack: err.stack
+    });
+    try {
+        if (!isRavenDisabled()) if (!usersFault) Raven.captureException(err);
+    } catch (err) {}
+};
 
 App.prototype.doReset = function () {
     if (this.state.dictInterval) window.clearInterval(this.state.dictInterval);
@@ -332,20 +375,14 @@ App.prototype.onRenditionClick = function (event) {
     let x = event.pageX - wrapper.scrollLeft;
     let b = null;
     if (x > wrapper.clientWidth - 20) {
-        event.preventDefault();
-        this.doSidebar();
+        b = null
     } else if (x < third) {
-        event.preventDefault();
-        this.state.rendition.prev();
-        b = this.qs(".bar button.prev");
+        b = null
     } else if (x > (third * 2)) {
-        event.preventDefault();
-        this.state.rendition.next();
-        b = this.qs(".bar button.next");
+        b = null
     }
     if (b) {
-        b.style.transform = "scale(1.15)";
-        window.setTimeout(() => b.style.transform = "", 150);
+       b = null
     }
 };
 
