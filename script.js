@@ -370,7 +370,27 @@ App.prototype.onRenditionClick = function (event) {
         if (this.state.rendition.manager.getContents()[0].window.getSelection().toString().length !== 0) return;
     } catch (err) {}
 
-  
+    let wrapper = this.state.rendition.manager.container;
+    let third = wrapper.clientWidth / 3;
+    let x = event.pageX - wrapper.scrollLeft;
+    let b = null;
+    if (x > wrapper.clientWidth - 20) {
+        event.preventDefault();
+        this.doSidebar();
+    } else if (x < third) {
+        event.preventDefault();
+        this.state.rendition.prev();
+        b = this.qs(".bar button.prev");
+    } else if (x > (third * 2)) {
+        event.preventDefault();
+        this.state.rendition.next();
+        b = this.qs(".bar button.next");
+    }
+    if (b) {
+        b.style.transform = "scale(1.15)";
+        window.setTimeout(() => b.style.transform = "", 150);
+    }
+};
 
 App.prototype.onRenditionDisplayedTouchSwipe = function (event) {
     let start = null
